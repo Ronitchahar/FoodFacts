@@ -1,60 +1,56 @@
-import { useEffect, useState } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
-import axios from 'axios'
+import { useLocation, useNavigate } from 'react-router-dom'
+import { useDispatch, useSelector } from 'react-redux'
+import { addItem, removeItem } from '../store/savedSlice'
+import { Button, Typography, Container } from '@mui/material'
 
-function DetailPage({ saved, dispatch }) {
-  const { barcode } = useParams()
+function DetailPage() {
+  const location = useLocation()
   const navigate = useNavigate()
+  const dispatch = useDispatch()
+  const saved = useSelector(s => s.saved.items)
 
-  const [product, setProduct] = useState(null)
-  const [loading, setLoading] = useState(true)
+  const product = location.state?.product
 
-  useEffect(() => {
-    let cancelled = false
+  // ✅ SAFE GUARD (important)
+  if (!product) {
+    return (
+      <Container>
+        <Typography variant="h6">Product not found</Typography>
+        <Button onClick={() => navigate('/')}>Go Back</Button>
+      </Container>
+    )
+  }
 
-    const fetchData = async () => {
-      try {
-        const res = await axios.get(
-          `https://world.openfoodfacts.org/api/v0/product/${barcode}.json`
-        )
+  const isSaved = saved.some(p => p.code === product.code)
 
-        if (!cancelled) {
-          setProduct(res.data.product)
-          setLoading(false)
-        }
-      } catch {
-        if (!cancelled) setLoading(false)
-      }
+  const handleClick = () => {
+    if (isSaved) {
+      dispatch(removeItem(product.code))
+    } else {
+      dispatch(addItem(product))
     }
-
-    fetchData()
-
-    return () => (cancelled = true)
-  }, [barcode])
-
-  if (loading) return <p>Loading...</p>
-  if (!product) return <p>No product</p>
-
-  const isSaved = saved.some(p => p.code === barcode)
+  }
 
   return (
-    <div>
-      <button onClick={() => navigate(-1)}>Back</button>
+    <Container>
+      <Button onClick={() => navigate(-1)}>Back</Button>
 
-      <h2>{product.product_name}</h2>
+      <Typography variant="h5">
+        {product.product_name || 'Unknown Product'}
+      </Typography>
 
-      <button
-        onClick={() =>
-          dispatch(
-            isSaved
-              ? { type: 'REMOVE', code: barcode }
-              : { type: 'ADD', product }
-          )
-        }
-      >
+      <Typography variant="body1">
+        Brand: {product.brands || 'N/A'}
+      </Typography>
+
+      <Typography variant="body1">
+        Code: {product.code || 'N/A'}
+      </Typography>
+
+      <Button onClick={handleClick}>
         {isSaved ? 'Remove' : 'Save'}
-      </button>
-    </div>
+      </Button>
+    </Container>
   )
 }
 

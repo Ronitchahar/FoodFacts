@@ -1,28 +1,27 @@
-import { useNavigate } from 'react-router-dom'
+import { useSelector, useDispatch } from 'react-redux'
+import { removeItem } from '../store/savedSlice'
+import { Container, Typography, Button } from '@mui/material'
 
-function SavedPage({ saved, dispatch }) {
-  const navigate = useNavigate()
-
-  if (!saved.length) return <p>No saved items</p>
+function SavedPage() {
+  const items = useSelector(s => s.saved.items)
+  const dispatch = useDispatch()
 
   return (
-    <div>
-      <h2>Saved Items</h2>
+    <Container>
+      <Typography variant="h4">Saved</Typography>
 
-      {saved.map((p) => (
+      {items.length === 0 && <Typography>No items saved</Typography>}
+
+      {items.map(p => (
         <div key={p.code}>
-          <p>{p.product_name}</p>
+          <Typography>{p.product_name}</Typography>
 
-          <button onClick={() => navigate(`/product/${p.code}`)}>
-            View
-          </button>
-
-          <button onClick={() => dispatch({ type: 'REMOVE', code: p.code })}>
+          <Button onClick={() => dispatch(removeItem(p.code))}>
             Remove
-          </button>
+          </Button>
         </div>
       ))}
-    </div>
+    </Container>
   )
 }
 
