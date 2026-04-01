@@ -1,14 +1,12 @@
 import FoodCard from './FoodCard'
 
 function FoodList({ products }) {
-  if (!products || products.length === 0) {
-    return <p>No results found. Try a different search.</p>
-  }
+  if (!products.length) return <p>No results found</p>
 
   return (
     <div className="food-list">
-      {products.map((product, index) => (
-        <FoodCard key={product.code || index} product={product} />
+      {products.map((p, i) => (
+        <FoodCard key={p.code || i} product={p} />
       ))}
     </div>
   )
